@@ -1,3 +1,5 @@
+const fs = require("fs/promises");
+const path = require("path");
 const db = require("../connection");
 
 exports.fetchAllTopics = () => {
@@ -10,7 +12,16 @@ exports.fetchAllTopics = () => {
       return rows;
     })
     .catch((err) => {
-      console.error("Error in fetchAllTopics", err);
       throw err;
     });
+};
+
+exports.fetchApiEndpoints = async () => {
+  try {
+    const filePath = path.join(__dirname, "..", "..", "endpoints.json");
+    const data = await fs.readFile(filePath, "utf-8");
+    return JSON.parse(data);
+  } catch (error) {
+    throw error;
+  }
 };
