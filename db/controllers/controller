@@ -1,12 +1,21 @@
-const { fetchAllTopics } = require("../model/model.js");
+const { fetchAllTopics, fetchApiEndpoints } = require("../model/model.js");
 
-exports.getTopics = (req, res) => {
+exports.getTopics = (req, res, next) => {
   fetchAllTopics()
     .then((topics) => {
       res.status(200).send(topics);
     })
-    .catch((error) => {
-      console.error("Error in getTopics:", error.message);
-      res.status(500).send("Internal Server Error");
+    .catch((err) => {
+      next(err);
+    });
+};
+
+exports.getApiEndpoints = (req, res, next) => {
+  fetchApiEndpoints()
+    .then(({ apiEndpoints }) => {
+      res.status(200).json(apiEndpoints);
+    })
+    .catch((err) => {
+      next(err);
     });
 };
