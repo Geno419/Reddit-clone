@@ -23,6 +23,7 @@ describe("test DB for requests", () => {
         expect(res.body.error).toBe("Not Found");
       });
   });
+
   test("/api/topics returns all topics", () => {
     return request(app)
       .get("/api/topics")
@@ -35,15 +36,33 @@ describe("test DB for requests", () => {
         });
       });
   });
-  test("serves up a json representation of all the available endpoints of the api", () => {
+
+  test("serves up a json representation of all the available endpoints of the api", async () => {
+    const res = await request(app).get("/api");
+    const filePath = path.join(__dirname, "..", "endpoints.json");
+    const data = await fs.readFile(filePath, "utf-8");
+    const apiEndpoints = JSON.parse(data);
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual(apiEndpoints);
+  });
+
+  test("/api/topics returns all topics", () => {
     return request(app)
-      .get("/api")
-      .then(async (res) => {
+      .get("/api/articles/1")
+      .then((res) => {
         expect(res.status).toBe(200);
-        const filePath = path.join(__dirname, "..", "endpoints.json");
-        const data = await fs.readFile(filePath, "utf-8");
-        const apiEndpoints = JSON.parse(data);
-        expect(res.body).toEqualapiEndpoints;
+        expect(res.body.length).toBeGreaterThan(0);
+        res.body.forEach((topic) => {
+          expect(topic).toHaveProperty("author");
+          expect(topic).toHaveProperty("title");
+          expect(topic).toHaveProperty("article_id");
+          expect(topic).toHaveProperty("body");
+          expect(topic).toHaveProperty("topic");
+          expect(topic).toHaveProperty("created_at");
+          expect(topic).toHaveProperty("votes");
+          expect(topic).toHaveProperty("article_img_url");
+        });
       });
   });
 });
