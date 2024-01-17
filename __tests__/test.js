@@ -17,9 +17,9 @@ test("responds with 404 for invalid path", () => {
   return request(app)
     .get("/api/nonexistentpath")
     .then((res) => {
-      expect(404);
-      expect(res.body).toHaveProperty("error");
-      expect(res.body.error).toBe("Not Found");
+      expect(res.status).toBe(404);
+      expect(res).toHaveProperty("error");
+      expect(res.body.error).toBe("endpoint not found");
     });
 });
 
@@ -28,7 +28,7 @@ describe("GET /api/topics", () => {
     return request(app)
       .get("/api/topics")
       .then((res) => {
-        expect(200);
+        expect(res.status).toBe(200);
         expect(res.body.length).toBe(data.topicData.length);
         res.body.forEach((topic) => {
           expect(topic).toHaveProperty("slug");
@@ -43,7 +43,7 @@ describe("GET /api", () => {
     const filePath = path.join(__dirname, "..", "endpoints.json");
     const data = await fs.readFile(filePath, "utf-8");
     const apiEndpoints = JSON.parse(data);
-    expect(200);
+    expect(res.status).toBe(200);
     expect(res.body).toEqual(apiEndpoints);
   });
 });
@@ -53,7 +53,7 @@ describe("GET /api/article:article_id", () => {
     return request(app)
       .get("/api/articles/1")
       .then((res) => {
-        expect(200);
+        expect(res.status).toBe(200);
         expect(res.body.length).toBeGreaterThan(0);
         res.body.forEach((topic) => {
           expect(topic).toHaveProperty("author");
@@ -74,7 +74,7 @@ describe("GET /api/articles ", () => {
     return request(app)
       .get("/api/articles")
       .then((res) => {
-        expect(200);
+        expect(res.status).toBe(200);
         expect(res.body.length).toBeGreaterThan(0);
         expect(res.body).toBeSortedBy("created_at", { descending: true });
         res.body.forEach((article) => {
@@ -92,6 +92,55 @@ describe("GET /api/articles ", () => {
   });
 });
 
+describe("POST /api/articles/:article_id/comments ", () => {
+  test(".../:article_id/comments adds new comment to given article_id", () => {
+    const newComment = {
+      username: "icellusedkars",
+      body: "To be, or not to be, that is the question",
+    };
+    return request(app)
+      .post("/api/articles/1/comments")
+      .send(newComment)
+      .expect(201)
+      .then((comment) => {
+        expect(comment).toHaveProperty(
+          "text",
+          `${newComment.username} commented ${newComment.body}`
+        );
+      });
+  });
+  test("returns not an article when article not in DB", () => {
+    const article_id = 9999;
+    const newComment = {
+      username: "icellusedkars",
+      body: "To be, or not to be, that is the question",
+    };
+    return request(app)
+      .post(`/api/articles/${article_id}/comments`)
+      .send(newComment)
+      .expect(404)
+      .then((err) => {
+        expect(err).toHaveProperty("text", `${article_id} is not an article`);
+      });
+  });
+  test("returns 'not registered user when username not in DB", () => {
+    const article_id = 1;
+    const newComment = {
+      username: "Hamlet",
+      body: "To be, or not to be, that is the question",
+    };
+    return request(app)
+      .post(`/api/articles/${article_id}/comments`)
+      .send(newComment)
+      .expect(404)
+      .then((err) => {
+        expect(err).toHaveProperty(
+          "text",
+          `The username "${newComment.username}" does not exist`
+        );
+      });
+  });
+});
 describe("GET /api/articles/:article_id/comments ", () => {
   test(".../:article_id/comments returns all comments for given article_id", () => {
     return request(app)
@@ -117,9 +166,10 @@ describe("GET /api/articles/:article_id/comments ", () => {
   });
   test("returns 404 when article_id does not exist", () => {
     return request(app)
-      .get("/api/articles/9999/comments")
-      .then((res) => {
-        expect(404);
+      .get("/api/articles/888/comments")
+      .then((err) => {
+        expect(err.status).toBe(404);
+        expect(err).toHaveProperty("text", "id not found");
       });
   });
 });

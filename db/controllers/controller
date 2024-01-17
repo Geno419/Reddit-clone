@@ -1,10 +1,12 @@
-const articles = require("../data/test-data/articles.js");
 const {
   fetchAllTopics,
   fetchApiEndpoints,
   fetchArticleByID,
   fetchAllArticles,
   fetchCommentsByArticleId,
+  checkIdExists,
+  fetchPostedComment,
+  verifyDetails,
 } = require("../model/model.js");
 
 exports.getTopics = (req, res, next) => {
@@ -50,9 +52,29 @@ exports.getAllArticles = (req, res, next) => {
 
 exports.getCommentsByArticleId = (req, res, next) => {
   const { article_id } = req.params;
-  fetchCommentsByArticleId(article_id)
-    .then((comments) => {
-      res.status(200).send(comments);
+  const idCheckQuery = checkIdExists(article_id, res, next);
+  const fetchCommentsQuery = fetchCommentsByArticleId(article_id, next);
+  Promise.all([idCheckQuery, fetchCommentsQuery])
+    .then((response) => {
+      if (response[0]) {
+        res.status(response[0].status).send(response[0].msg);
+      }
+      res.status(200).send(response[1]);
+    })
+    .catch((err) => {
+      next(err);
+    });
+};
+
+exports.postCommentById = (req, res, next) => {
+  const { article_id } = req.params;
+  const { username, body } = req.body;
+  return verifyDetails(article_id, username, res, next)
+    .then(() => {
+      return fetchPostedComment(article_id, username, body);
+    })
+    .then((comment) => {
+      res.status(201).send(`${username} commented ${comment}`);
     })
     .catch((err) => {
       next(err);
