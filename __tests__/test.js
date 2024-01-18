@@ -37,6 +37,7 @@ describe("GET /api/topics", () => {
       });
   });
 });
+
 describe("GET /api", () => {
   test("api return description of all api endpoints", async () => {
     const res = await request(app).get("/api");
@@ -92,6 +93,40 @@ describe("GET /api/articles ", () => {
   });
 });
 
+describe("GET /api/articles/:article_id/comments ", () => {
+  test(".../:article_id/comments returns all comments for given article_id", () => {
+    return request(app)
+      .get("/api/articles/1/comments")
+      .then((res) => {
+        expect(res.status).toBe(200);
+        expect(res.body.length).toBeGreaterThan(0);
+        expect(res.body).toBeSortedBy("created_at", {
+          descending: true,
+        });
+        const expectedCommentStructure = {
+          comment_id: expect.any(Number),
+          votes: expect.any(Number),
+          created_at: expect.any(String),
+          author: expect.any(String),
+          body: expect.any(String),
+          article_id: expect.any(Number),
+        };
+        res.body.forEach((comment) => {
+          expect(comment).toMatchObject(expectedCommentStructure);
+        });
+      });
+  });
+  test("returns 404 when article_id does not exist", () => {
+    const article_id = "888";
+    return request(app)
+      .get(`/api/articles/${article_id}/comments`)
+      .then((err) => {
+        expect(err.status).toBe(404);
+        expect(err.text).toBe(`${article_id} is not an article`);
+      });
+  });
+});
+
 describe("POST /api/articles/:article_id/comments ", () => {
   test(".../:article_id/comments adds new comment to given article_id", () => {
     const newComment = {
@@ -101,9 +136,9 @@ describe("POST /api/articles/:article_id/comments ", () => {
     return request(app)
       .post("/api/articles/1/comments")
       .send(newComment)
-      .expect(201)
-      .then((comment) => {
-        expect(comment).toHaveProperty(
+      .then((res) => {
+        expect(res.status).toBe(200);
+        expect(res).toHaveProperty(
           "text",
           `${newComment.username} commented ${newComment.body}`
         );
@@ -141,35 +176,36 @@ describe("POST /api/articles/:article_id/comments ", () => {
       });
   });
 });
-describe("GET /api/articles/:article_id/comments ", () => {
-  test(".../:article_id/comments returns all comments for given article_id", () => {
+
+describe("PATCH PATCH /api/articles/:article_id", () => {
+  test("update vote count by ten", () => {
+    const IncrementByObj = { IncrementBy: "1" };
     return request(app)
-      .get("/api/articles/1/comments")
+      .patch("/api/articles/1")
+      .send(IncrementByObj)
       .then((res) => {
-        expect(200);
-        expect(res.body.length).toBeGreaterThan(0);
-        expect(res.body).toBeSortedBy("created_at", {
-          descending: true,
-        });
-        const expectedCommentStructure = {
-          comment_id: expect.any(Number),
-          votes: expect.any(Number),
-          created_at: expect.any(String),
-          author: expect.any(String),
-          body: expect.any(String),
-          article_id: expect.any(Number),
-        };
-        res.body.forEach((comment) => {
-          expect(comment).toMatchObject(expectedCommentStructure);
-        });
+        expect(res.status).toBe(200);
+        expect(Number(Object.values(res.body))).toBeGreaterThan(1);
       });
   });
-  test("returns 404 when article_id does not exist", () => {
+  test("update vote count by -100", () => {
+    const IncrementByObj = { IncrementBy: "-100" };
     return request(app)
-      .get("/api/articles/888/comments")
+      .patch("/api/articles/1")
+      .send(IncrementByObj)
+      .then((res) => {
+        expect(res.status).toBe(200);
+        expect(Number(Object.values(res.body))).toBeGreaterThanOrEqual(0);
+      });
+  });
+  test("returns not an article when article not in DB", () => {
+    const IncrementByObj = { IncrementBy: "1000" };
+    return request(app)
+      .patch("/api/articles/9999")
+      .send(IncrementByObj)
       .then((err) => {
         expect(err.status).toBe(404);
-        expect(err).toHaveProperty("text", "id not found");
+        expect(err.text).toEqual("9999 is not an article");
       });
   });
 });
