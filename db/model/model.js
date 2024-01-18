@@ -10,25 +10,15 @@ exports.fetchAllTopics = () => {
     )
     .then(({ rows }) => {
       return rows;
-    })
-    .catch((err) => {
-      throw err;
     });
 };
-
 exports.fetchApiEndpoints = () => {
   const filePath = path.join(__dirname, "..", "..", "endpoints.json");
 
-  return fs
-    .readFile(filePath, "utf-8")
-    .then((data) => {
-      return JSON.parse(data);
-    })
-    .catch((error) => {
-      throw error;
-    });
+  return fs.readFile(filePath, "utf-8").then((data) => {
+    return JSON.parse(data);
+  });
 };
-
 exports.fetchArticleByID = (article_id) => {
   return db
     .query(
@@ -38,13 +28,8 @@ exports.fetchArticleByID = (article_id) => {
     )
     .then(({ rows }) => {
       return rows;
-    })
-
-    .catch((err) => {
-      throw err;
     });
 };
-
 exports.fetchAllArticles = () => {
   return db
     .query(
@@ -58,13 +43,9 @@ exports.fetchAllArticles = () => {
     )
     .then(({ rows }) => {
       return rows;
-    })
-    .catch((err) => {
-      throw err;
     });
 };
-
-exports.fetchCommentsByArticleId = (article_id, next) => {
+exports.fetchCommentsByArticleId = (article_id) => {
   return db
     .query(
       `
@@ -74,12 +55,8 @@ exports.fetchCommentsByArticleId = (article_id, next) => {
     )
     .then(({ rows }) => {
       return rows;
-    })
-    .catch((err) => {
-      next(err);
     });
 };
-
 exports.fetchPostedComment = (article_id, username, body) => {
   return db
     .query(
@@ -91,13 +68,9 @@ exports.fetchPostedComment = (article_id, username, body) => {
     )
     .then(({ rows }) => {
       return rows[0].body;
-    })
-    .catch((err) => {
-      throw err;
     });
 };
-
-exports.updateVoteByArticleId = (IncrementBy, article_id, res, next) => {
+exports.updateVoteByArticleId = (IncrementBy, article_id) => {
   return db
     .query(
       `SELECT votes FROM articles
@@ -119,32 +92,45 @@ exports.updateVoteByArticleId = (IncrementBy, article_id, res, next) => {
     })
     .then(({ rows }) => {
       return rows[0];
-    })
-    .catch((err) => {
-      next(err);
     });
 };
-exports.verifyUsername = (username, res, next) => {
+exports.verifyUsername = (username, res) => {
   return db
     .query(`SELECT * FROM users WHERE username = $1;`, [username])
     .then(({ rows }) => {
       if (rows.length === 0) {
         res.status(404).send(`The username "${username}" does not exist`);
       }
-    })
-    .catch((err) => {
-      next(err);
     });
 };
-exports.verifyArticle = (article_id, res, next) => {
+exports.verifyArticle = (article_id, res) => {
   return db
     .query(`SELECT * FROM articles WHERE article_id = $1;`, [article_id])
     .then(({ rows }) => {
       if (rows.length === 0) {
         return res.status(404).send(`${article_id} is not an article`);
       }
-    })
-    .catch((err) => {
-      next(err);
+    });
+};
+exports.verifyComment = (comment_id, res) => {
+  return db
+    .query(`SELECT * FROM comments WHERE comment_id = $1;`, [comment_id])
+    .then(({ rows }) => {
+      if (rows.length === 0) {
+        return res.status(404).send(`${comment_id} is not a comment`);
+      }
+    });
+};
+exports.removeComment = (comment_id) => {
+  return db
+    .query(
+      `
+  DELETE FROM comments
+  WHERE comment_id = $1
+  RETURNING true;`,
+      [comment_id]
+    )
+    .then(({ rows }) => {
+      return rows;
     });
 };
