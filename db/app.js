@@ -9,6 +9,7 @@ const {
   postCommentById,
   patchByArticleId,
   deleteCommentByID,
+  getAllUsers,
 } = require("./controllers/controller.js");
 app.use(express.json());
 
@@ -17,6 +18,7 @@ app.get("/api", getApiEndpoints);
 app.get("/api/articles/:article_id", getArticleByID);
 app.get("/api/articles", getAllArticles);
 app.get("/api/articles/:article_id/comments", getCommentsByArticleId);
+app.get("/api/users", getAllUsers);
 
 app.post("/api/articles/:article_id/comments", postCommentById);
 

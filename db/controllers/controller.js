@@ -10,6 +10,7 @@ const {
   verifyComment,
   updateVoteByArticleId,
   removeComment,
+  fetchAllUsers,
 } = require("../model/model.js");
 
 exports.getTopics = (req, res, next) => {
@@ -94,5 +95,11 @@ exports.deleteCommentByID = (req, res, next) => {
     .then((data) => {
       res.status(200).send(data);
     })
+    .catch((err) => next(err));
+};
+
+exports.getAllUsers = (req, res, next) => {
+  fetchAllUsers()
+    .then((users) => res.status(200).send(users))
     .catch((err) => next(err));
 };

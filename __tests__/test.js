@@ -225,3 +225,21 @@ describe("DELETE /api/comments/:comment_id", () => {
       });
   });
 });
+
+describe.only("GET /api/users", () => {
+  test("return all users", () => {
+    return request(app)
+      .get("/api/users")
+      .then((users) => {
+        expect(users.status).toBe(200);
+        const expectedUserStructure = {
+          username: expect.any(String),
+          name: expect.any(String),
+          avatar_url: expect.any(String),
+        };
+        users.body.forEach((user) => {
+          expect(user).toMatchObject(expectedUserStructure);
+        });
+      });
+  });
+});
