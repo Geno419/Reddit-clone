@@ -7,7 +7,9 @@ const {
   fetchPostedComment,
   verifyArticle,
   verifyUsername,
+  verifyComment,
   updateVoteByArticleId,
+  removeComment,
 } = require("../model/model.js");
 
 exports.getTopics = (req, res, next) => {
@@ -15,9 +17,7 @@ exports.getTopics = (req, res, next) => {
     .then((topics) => {
       res.status(200).send(topics);
     })
-    .catch((err) => {
-      next(err);
-    });
+    .catch((err) => next(err));
 };
 
 exports.getApiEndpoints = (req, res, next) => {
@@ -25,9 +25,7 @@ exports.getApiEndpoints = (req, res, next) => {
     .then((apiEndpoints) => {
       res.status(200).json(apiEndpoints);
     })
-    .catch((err) => {
-      next(err);
-    });
+    .catch((err) => next(err));
 };
 
 exports.getArticleByID = (req, res, next) => {
@@ -36,9 +34,7 @@ exports.getArticleByID = (req, res, next) => {
     .then((result) => {
       res.status(200).send(result);
     })
-    .catch((err) => {
-      next(err);
-    });
+    .catch((err) => next(err));
 };
 
 exports.getAllArticles = (req, res, next) => {
@@ -46,9 +42,7 @@ exports.getAllArticles = (req, res, next) => {
     .then((articles) => {
       res.status(200).send(articles);
     })
-    .catch((err) => {
-      next(err);
-    });
+    .catch((err) => next(err));
 };
 
 exports.getCommentsByArticleId = (req, res, next) => {
@@ -59,9 +53,7 @@ exports.getCommentsByArticleId = (req, res, next) => {
     .then((response) => {
       res.status(200).send(response);
     })
-    .catch((err) => {
-      next(err);
-    });
+    .catch((err) => next(err));
 };
 
 exports.postCommentById = (req, res, next) => {
@@ -75,11 +67,9 @@ exports.postCommentById = (req, res, next) => {
       return fetchPostedComment(article_id, username, body);
     })
     .then((comment) => {
-      res.status(200).send(`${username} commented ${comment}`);
+      res.status(200).send({ comment: comment });
     })
-    .catch((err) => {
-      next(err);
-    });
+    .catch((err) => next(err));
 };
 
 exports.patchByArticleId = (req, res, next) => {
@@ -92,7 +82,17 @@ exports.patchByArticleId = (req, res, next) => {
     .then(({ votes }) => {
       res.status(200).send({ votes });
     })
-    .catch((err) => {
-      next(err);
-    });
+    .catch((err) => next(err));
+};
+
+exports.deleteCommentByID = (req, res, next) => {
+  const { comment_id } = req.params;
+  verifyComment(comment_id, res, next)
+    .then(() => {
+      return removeComment(comment_id, next);
+    })
+    .then((data) => {
+      res.status(200).send(data);
+    })
+    .catch((err) => next(err));
 };

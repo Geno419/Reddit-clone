@@ -138,10 +138,7 @@ describe("POST /api/articles/:article_id/comments ", () => {
       .send(newComment)
       .then((res) => {
         expect(res.status).toBe(200);
-        expect(res).toHaveProperty(
-          "text",
-          `${newComment.username} commented ${newComment.body}`
-        );
+        expect(res.body).toHaveProperty("comment");
       });
   });
   test("returns not an article when article not in DB", () => {
@@ -206,6 +203,25 @@ describe("PATCH PATCH /api/articles/:article_id", () => {
       .then((err) => {
         expect(err.status).toBe(404);
         expect(err.text).toEqual("9999 is not an article");
+      });
+  });
+});
+
+describe("DELETE /api/comments/:comment_id", () => {
+  test("delete the given comment by comment_id", () => {
+    return request(app)
+      .delete("/api/comments/1")
+      .then((res) => {
+        expect(res.status).toBe(200);
+        expect(res.body[0]).toEqual({ bool: true });
+      });
+  });
+  test("return error 404 when comment_id not in DB", () => {
+    return request(app)
+      .delete("/api/comments/8998")
+      .then((res) => {
+        expect(res.status).toBe(404);
+        expect(res.text).toEqual("8998 is not a comment");
       });
   });
 });
