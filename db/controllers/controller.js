@@ -20,7 +20,6 @@ exports.getTopics = (req, res, next) => {
     })
     .catch((err) => next(err));
 };
-
 exports.getApiEndpoints = (req, res, next) => {
   fetchApiEndpoints()
     .then((apiEndpoints) => {
@@ -28,7 +27,6 @@ exports.getApiEndpoints = (req, res, next) => {
     })
     .catch((err) => next(err));
 };
-
 exports.getArticleByID = (req, res, next) => {
   const { article_id } = req.params;
   fetchArticleByID(article_id)
@@ -47,7 +45,6 @@ exports.getCommentsByArticleId = (req, res, next) => {
     })
     .catch((err) => next(err));
 };
-
 exports.postCommentById = (req, res, next) => {
   const { article_id } = req.params;
   const { username, body } = req.body;
@@ -63,7 +60,6 @@ exports.postCommentById = (req, res, next) => {
     })
     .catch((err) => next(err));
 };
-
 exports.patchByArticleId = (req, res, next) => {
   const { article_id } = req.params;
   const { IncrementBy } = req.body;
@@ -76,7 +72,6 @@ exports.patchByArticleId = (req, res, next) => {
     })
     .catch((err) => next(err));
 };
-
 exports.deleteCommentByID = (req, res, next) => {
   const { comment_id } = req.params;
   verifyComment(comment_id, res, next)
@@ -88,13 +83,11 @@ exports.deleteCommentByID = (req, res, next) => {
     })
     .catch((err) => next(err));
 };
-
 exports.getAllUsers = (req, res, next) => {
   fetchAllUsers()
     .then((users) => res.status(200).send({ users: users }))
     .catch((err) => next(err));
 };
-
 exports.fetchArticleByTopic = (req, res, next) => {
   const { topic } = req.query;
   getArticlesByTopic(topic)
