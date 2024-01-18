@@ -134,3 +134,11 @@ exports.removeComment = (comment_id) => {
       return rows;
     });
 };
+exports.fetchAllUsers = () => {
+  return db
+    .query(
+      `
+  SELECT * FROM users;`
+    )
+    .then(({ rows }) => rows);
+};
