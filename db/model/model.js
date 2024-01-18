@@ -30,21 +30,6 @@ exports.fetchArticleByID = (article_id) => {
       return rows;
     });
 };
-exports.fetchAllArticles = () => {
-  return db
-    .query(
-      `SELECT articles.author, articles.title,articles.topic, articles.article_id,articles.topic,
-        articles.created_at, articles.votes, articles.article_img_url,
-        comments.article_id AS comment_count
-        FROM articles 
-        INNER JOIN  
-        comments ON comments.article_id = articles.article_id
-        ORDER BY articles.created_at DESC;`
-    )
-    .then(({ rows }) => {
-      return rows;
-    });
-};
 exports.fetchCommentsByArticleId = (article_id) => {
   return db
     .query(
@@ -141,4 +126,29 @@ exports.fetchAllUsers = () => {
   SELECT * FROM users;`
     )
     .then(({ rows }) => rows);
+};
+exports.getArticlesByTopic = (topic = "PassBYChecker") => {
+  let validTopicQueries = ["mitch", "cats", "PassBYChecker"];
+  if (!validTopicQueries.includes(topic)) {
+    return Promise.reject({ status: 400, msg: "Invalid sort_by query" });
+  }
+  validTopicQueries = ["mitch", "cats"];
+
+  if (validTopicQueries.includes(topic)) {
+    return db
+      .query(`SELECT * FROM articles WHERE topic = '${topic}';`)
+      .then(({ rows }) => rows);
+  } else {
+    return db
+      .query(
+        `SELECT articles.author, articles.title,articles.topic, articles.article_id,articles.topic,
+        articles.created_at, articles.votes, articles.article_img_url,
+        comments.article_id AS comment_count
+        FROM articles 
+        INNER JOIN  
+        comments ON comments.article_id = articles.article_id
+        ORDER BY articles.created_at DESC;`
+      )
+      .then(({ rows }) => rows);
+  }
 };

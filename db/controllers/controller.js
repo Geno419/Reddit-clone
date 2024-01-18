@@ -2,7 +2,6 @@ const {
   fetchAllTopics,
   fetchApiEndpoints,
   fetchArticleByID,
-  fetchAllArticles,
   fetchCommentsByArticleId,
   fetchPostedComment,
   verifyArticle,
@@ -11,6 +10,7 @@ const {
   updateVoteByArticleId,
   removeComment,
   fetchAllUsers,
+  getArticlesByTopic,
 } = require("../model/model.js");
 
 exports.getTopics = (req, res, next) => {
@@ -20,7 +20,6 @@ exports.getTopics = (req, res, next) => {
     })
     .catch((err) => next(err));
 };
-
 exports.getApiEndpoints = (req, res, next) => {
   fetchApiEndpoints()
     .then((apiEndpoints) => {
@@ -28,7 +27,6 @@ exports.getApiEndpoints = (req, res, next) => {
     })
     .catch((err) => next(err));
 };
-
 exports.getArticleByID = (req, res, next) => {
   const { article_id } = req.params;
   fetchArticleByID(article_id)
@@ -37,15 +35,6 @@ exports.getArticleByID = (req, res, next) => {
     })
     .catch((err) => next(err));
 };
-
-exports.getAllArticles = (req, res, next) => {
-  fetchAllArticles()
-    .then((articles) => {
-      res.status(200).send(articles);
-    })
-    .catch((err) => next(err));
-};
-
 exports.getCommentsByArticleId = (req, res, next) => {
   const { article_id } = req.params;
 
@@ -56,7 +45,6 @@ exports.getCommentsByArticleId = (req, res, next) => {
     })
     .catch((err) => next(err));
 };
-
 exports.postCommentById = (req, res, next) => {
   const { article_id } = req.params;
   const { username, body } = req.body;
@@ -72,7 +60,6 @@ exports.postCommentById = (req, res, next) => {
     })
     .catch((err) => next(err));
 };
-
 exports.patchByArticleId = (req, res, next) => {
   const { article_id } = req.params;
   const { IncrementBy } = req.body;
@@ -81,11 +68,10 @@ exports.patchByArticleId = (req, res, next) => {
       return updateVoteByArticleId(IncrementBy, article_id, res, next);
     })
     .then(({ votes }) => {
-      res.status(200).send({ votes });
+      res.status(200).send({ votes: votes });
     })
     .catch((err) => next(err));
 };
-
 exports.deleteCommentByID = (req, res, next) => {
   const { comment_id } = req.params;
   verifyComment(comment_id, res, next)
@@ -93,13 +79,18 @@ exports.deleteCommentByID = (req, res, next) => {
       return removeComment(comment_id, next);
     })
     .then((data) => {
-      res.status(200).send(data);
+      res.status(200).send({ data: data });
     })
     .catch((err) => next(err));
 };
-
 exports.getAllUsers = (req, res, next) => {
   fetchAllUsers()
-    .then((users) => res.status(200).send(users))
+    .then((users) => res.status(200).send({ users: users }))
+    .catch((err) => next(err));
+};
+exports.fetchArticleByTopic = (req, res, next) => {
+  const { topic } = req.query;
+  getArticlesByTopic(topic)
+    .then((articles) => res.status(200).send({ articles: articles }))
     .catch((err) => next(err));
 };
