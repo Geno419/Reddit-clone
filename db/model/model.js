@@ -63,22 +63,7 @@ exports.fetchAllArticles = () => {
       throw err;
     });
 };
-exports.checkIdExists = (article_id, res, next) => {
-  return db
-    .query(
-      `
-  SELECT * FROM comments WHERE article_id = $1;`,
-      [article_id]
-    )
-    .then(({ rows }) => {
-      if (rows.length === 0) {
-        res.status(404).send("id not found");
-      }
-    })
-    .catch((err) => {
-      next(err);
-    });
-};
+
 exports.fetchCommentsByArticleId = (article_id, next) => {
   return db
     .query(
@@ -112,20 +97,51 @@ exports.fetchPostedComment = (article_id, username, body) => {
     });
 };
 
-exports.verifyDetails = (article_id, username, res, next) => {
+exports.updateVoteByArticleId = (IncrementBy, article_id, res, next) => {
+  return db
+    .query(
+      `SELECT votes FROM articles
+      WHERE article_id = $1;`,
+      [article_id]
+    )
+    .then(({ rows }) => {
+      const { votes } = rows[0];
+      return Number(votes) + Number(IncrementBy);
+    })
+    .then((updatedVote) => {
+      return db.query(
+        `UPDATE articles
+        SET votes = $1
+        WHERE article_id = $2
+        RETURNING *;`,
+        [String(updatedVote), article_id]
+      );
+    })
+    .then(({ rows }) => {
+      return rows[0];
+    })
+    .catch((err) => {
+      next(err);
+    });
+};
+exports.verifyUsername = (username, res, next) => {
+  return db
+    .query(`SELECT * FROM users WHERE username = $1;`, [username])
+    .then(({ rows }) => {
+      if (rows.length === 0) {
+        res.status(404).send(`The username "${username}" does not exist`);
+      }
+    })
+    .catch((err) => {
+      next(err);
+    });
+};
+exports.verifyArticle = (article_id, res, next) => {
   return db
     .query(`SELECT * FROM articles WHERE article_id = $1;`, [article_id])
     .then(({ rows }) => {
       if (rows.length === 0) {
-        res.status(404).send(`${article_id} is not an article`);
-      }
-    })
-    .then(() => {
-      return db.query(`SELECT * FROM users WHERE username = $1;`, [username]);
-    })
-    .then(({ rows }) => {
-      if (rows.length === 0) {
-        res.status(404).send(`The username "${username}" does not exist`);
+        return res.status(404).send(`${article_id} is not an article`);
       }
     })
     .catch((err) => {

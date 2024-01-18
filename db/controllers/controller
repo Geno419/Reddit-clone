@@ -4,9 +4,10 @@ const {
   fetchArticleByID,
   fetchAllArticles,
   fetchCommentsByArticleId,
-  checkIdExists,
   fetchPostedComment,
-  verifyDetails,
+  verifyArticle,
+  verifyUsername,
+  updateVoteByArticleId,
 } = require("../model/model.js");
 
 exports.getTopics = (req, res, next) => {
@@ -52,14 +53,11 @@ exports.getAllArticles = (req, res, next) => {
 
 exports.getCommentsByArticleId = (req, res, next) => {
   const { article_id } = req.params;
-  const idCheckQuery = checkIdExists(article_id, res, next);
-  const fetchCommentsQuery = fetchCommentsByArticleId(article_id, next);
-  Promise.all([idCheckQuery, fetchCommentsQuery])
+
+  verifyArticle(article_id, res, next)
+    .then(() => fetchCommentsByArticleId(article_id, next))
     .then((response) => {
-      if (response[0]) {
-        res.status(response[0].status).send(response[0].msg);
-      }
-      res.status(200).send(response[1]);
+      res.status(200).send(response);
     })
     .catch((err) => {
       next(err);
@@ -69,12 +67,30 @@ exports.getCommentsByArticleId = (req, res, next) => {
 exports.postCommentById = (req, res, next) => {
   const { article_id } = req.params;
   const { username, body } = req.body;
-  return verifyDetails(article_id, username, res, next)
+  verifyArticle(article_id, res, next)
+    .then(() => {
+      return verifyUsername(username, res, next);
+    })
     .then(() => {
       return fetchPostedComment(article_id, username, body);
     })
     .then((comment) => {
-      res.status(201).send(`${username} commented ${comment}`);
+      res.status(200).send(`${username} commented ${comment}`);
+    })
+    .catch((err) => {
+      next(err);
+    });
+};
+
+exports.patchByArticleId = (req, res, next) => {
+  const { article_id } = req.params;
+  const { IncrementBy } = req.body;
+  verifyArticle(article_id, res, next)
+    .then(() => {
+      return updateVoteByArticleId(IncrementBy, article_id, res, next);
+    })
+    .then(({ votes }) => {
+      res.status(200).send({ votes });
     })
     .catch((err) => {
       next(err);
