@@ -76,9 +76,11 @@ describe("GET /api/articles ", () => {
       .get("/api/articles")
       .then((res) => {
         expect(res.status).toBe(200);
-        expect(res.body.length).toBeGreaterThan(0);
-        expect(res.body).toBeSortedBy("created_at", { descending: true });
-        res.body.forEach((article) => {
+        expect(res.body.articles.length).toBeGreaterThan(0);
+        expect(res.body.articles).toBeSortedBy("created_at", {
+          descending: true,
+        });
+        res.body.articles.forEach((article) => {
           expect(article).toHaveProperty("title");
           expect(article).toHaveProperty("article_id");
           expect(article).toHaveProperty("author");
@@ -213,7 +215,7 @@ describe("DELETE /api/comments/:comment_id", () => {
       .delete("/api/comments/1")
       .then((res) => {
         expect(res.status).toBe(200);
-        expect(res.body[0]).toEqual({ bool: true });
+        expect(res.body.data[0]).toEqual({ bool: true });
       });
   });
   test("return error 404 when comment_id not in DB", () => {
@@ -230,16 +232,45 @@ describe("GET /api/users", () => {
   test("return all users", () => {
     return request(app)
       .get("/api/users")
-      .then((users) => {
-        expect(users.status).toBe(200);
+      .then((res) => {
+        expect(res.status).toBe(200);
         const expectedUserStructure = {
           username: expect.any(String),
           name: expect.any(String),
           avatar_url: expect.any(String),
         };
-        users.body.forEach((user) => {
+        res.body.users.forEach((user) => {
           expect(user).toMatchObject(expectedUserStructure);
         });
+      });
+  });
+});
+
+describe("GET /api/articles?(topic query)", () => {
+  test("return all articles relating to queried topic", () => {
+    return request(app)
+      .get("/api/articles?topic=cats")
+      .then((res) => {
+        expect(res.status).toBe(200);
+        const expectedArticleStructure = {
+          author: expect.any(String),
+          title: expect.any(String),
+          topic: expect.any(String),
+          article_id: expect.any(Number),
+          created_at: expect.any(String),
+          votes: expect.any(Number),
+          article_img_url: expect.any(String),
+        };
+        res.body.articles.forEach((article) => {
+          expect(article).toMatchObject(expectedArticleStructure);
+        });
+      });
+  });
+  test("returns 404 status when the topic is not found", () => {
+    return request(app)
+      .get("/api/articles?topic=nonexistenttopic")
+      .then((response) => {
+        expect(response.status).toBe(404);
       });
   });
 });
