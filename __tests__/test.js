@@ -114,6 +114,7 @@ describe("GET /api/articles/:article_id/comments ", () => {
         };
         res.body.comments.forEach((comment) => {
           expect(comment).toMatchObject(expectedCommentStructure);
+          expect(comment.article_id).toBe(1);
         });
       });
   });
@@ -122,6 +123,21 @@ describe("GET /api/articles/:article_id/comments ", () => {
       .get(`/api/articles/888/comments`)
       .then((err) => {
         expect(err.status).toBe(404);
+      });
+  });
+  test("returns 400 when article_id is invalid", () => {
+    return request(app)
+      .get(`/api/articles/katherine/comments`)
+      .then((err) => {
+        expect(err.status).toBe(400);
+      });
+  });
+  test.only(".../:article_id/comments returns empty array for article that exist but has no comments", () => {
+    return request(app)
+      .get("/api/articles/2/comments")
+      .then((res) => {
+        expect(res.status).toBe(200);
+        expect(res.body.comments).toEqual([]);
       });
   });
 });

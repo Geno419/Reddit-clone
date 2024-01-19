@@ -89,7 +89,7 @@ exports.getAllUsers = (req, res, next) => {
     .then((users) => res.status(200).send({ users: users }))
     .catch((err) => next(err));
 };
-exports.fetchArticleByTopic = (req, res, next) => {
+exports.getArticleByTopic = (req, res, next) => {
   const { topic } = req.query;
   verifyTopic(topic)
     .then(() => getArticlesByTopic(topic, res))
