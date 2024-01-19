@@ -128,13 +128,7 @@ exports.fetchAllUsers = () => {
     .then(({ rows }) => rows);
 };
 exports.getArticlesByTopic = (topic = "PassBYChecker") => {
-  let validTopicQueries = ["mitch", "cats", "PassBYChecker"];
-  if (!validTopicQueries.includes(topic)) {
-    return Promise.reject({ status: 400, msg: "Invalid sort_by query" });
-  }
-  validTopicQueries = ["mitch", "cats"];
-
-  if (validTopicQueries.includes(topic)) {
+  if (topic !== "PassBYChecker") {
     return db
       .query(`SELECT * FROM articles WHERE topic = '${topic}';`)
       .then(({ rows }) => rows);
@@ -151,4 +145,14 @@ exports.getArticlesByTopic = (topic = "PassBYChecker") => {
       )
       .then(({ rows }) => rows);
   }
+};
+
+exports.verifyTopic = (topic, res) => {
+  return db
+    .query(`SELECT * FROM topics WHERE slug = $1;`, [topic])
+    .then(({ rows }) => {
+      if (rows.length === 0 && topic !== undefined) {
+        return res.status(404).send(`${topic} is not an article`);
+      }
+    });
 };

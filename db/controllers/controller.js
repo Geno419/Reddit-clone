@@ -11,6 +11,7 @@ const {
   removeComment,
   fetchAllUsers,
   getArticlesByTopic,
+  verifyTopic,
 } = require("../model/model.js");
 
 exports.getTopics = (req, res, next) => {
@@ -48,7 +49,7 @@ exports.getCommentsByArticleId = (req, res, next) => {
 exports.postCommentById = (req, res, next) => {
   const { article_id } = req.params;
   const { username, body } = req.body;
-  verifyArticle(article_id, res, next)
+  verifyArticle(article_id, res)
     .then(() => {
       return verifyUsername(username, res, next);
     })
@@ -90,7 +91,8 @@ exports.getAllUsers = (req, res, next) => {
 };
 exports.fetchArticleByTopic = (req, res, next) => {
   const { topic } = req.query;
-  getArticlesByTopic(topic)
-    .then((articles) => res.status(200).send({ articles: articles }))
+  verifyTopic(topic)
+    .then(() => getArticlesByTopic(topic, res))
+    .then((articles) => res.status(200).send({ articles }))
     .catch((err) => next(err));
 };
