@@ -132,7 +132,7 @@ describe("GET /api/articles/:article_id/comments ", () => {
         expect(err.status).toBe(400);
       });
   });
-  test.only(".../:article_id/comments returns empty array for article that exist but has no comments", () => {
+  test(".../:article_id/comments returns empty array for article that exist but has no comments", () => {
     return request(app)
       .get("/api/articles/2/comments")
       .then((res) => {
@@ -167,7 +167,7 @@ describe("POST /api/articles/:article_id/comments ", () => {
       .send(newComment)
       .expect(404)
       .then((err) => {
-        expect(err).toHaveProperty("text", `${article_id} is not an article`);
+        expect(err).toHaveProperty("text", `${article_id} is not found`);
       });
   });
   test("returns 'not registered user when username not in DB", () => {
@@ -217,7 +217,7 @@ describe("PATCH PATCH /api/articles/:article_id", () => {
       .send(IncrementByObj)
       .then((err) => {
         expect(err.status).toBe(404);
-        expect(err.text).toEqual("9999 is not an article");
+        expect(err.text).toEqual("9999 is not found");
       });
   });
 });

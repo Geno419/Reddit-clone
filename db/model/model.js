@@ -89,7 +89,8 @@ exports.verifyUsername = (username, res) => {
     });
 };
 exports.verifyArticle = (article_id, res) => {
-  if (typeof Number(article_id) !== "number") {
+  let id = Number(article_id);
+  if (isNaN(id)) {
     return res.status(400).send(`${article_id} is invalid`);
   }
   return db
