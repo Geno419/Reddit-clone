@@ -30,8 +30,8 @@ exports.getApiEndpoints = (req, res, next) => {
 exports.getArticleByID = (req, res, next) => {
   const { article_id } = req.params;
   fetchArticleByID(article_id)
-    .then((result) => {
-      res.status(200).send(result);
+    .then((article) => {
+      res.status(200).send({ article: article });
     })
     .catch((err) => next(err));
 };

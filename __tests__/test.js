@@ -55,8 +55,8 @@ describe("GET /api/article:article_id", () => {
       .get("/api/articles/1")
       .then((res) => {
         expect(res.status).toBe(200);
-        expect(res.body.length).toBeGreaterThan(0);
-        res.body.forEach((topic) => {
+        expect(res.body.article.length).toBeGreaterThan(0);
+        res.body.article.forEach((topic) => {
           expect(topic).toHaveProperty("author");
           expect(topic).toHaveProperty("title");
           expect(topic).toHaveProperty("article_id");
@@ -271,6 +271,27 @@ describe("GET /api/articles?(topic query)", () => {
       .get("/api/articles?topic=nonexistenttopic")
       .then((response) => {
         expect(response.status).toBe(404);
+      });
+  });
+});
+describe("GET /api/articles/:article_id (comment_count)", () => {
+  test("return comment count for article", () => {
+    return request(app)
+      .get("/api/articles/1")
+      .then((res) => {
+        expect(res.status).toBe(200);
+        expect(res.body.article.length).toBeGreaterThan(0);
+        res.body.article.forEach((topic) => {
+          expect(topic).toHaveProperty("author");
+          expect(topic).toHaveProperty("title");
+          expect(topic).toHaveProperty("article_id");
+          expect(topic).toHaveProperty("body");
+          expect(topic).toHaveProperty("topic");
+          expect(topic).toHaveProperty("created_at");
+          expect(topic).toHaveProperty("votes");
+          expect(topic).toHaveProperty("comment_count");
+          expect(topic).toHaveProperty("article_img_url");
+        });
       });
   });
 });
