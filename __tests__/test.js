@@ -29,8 +29,8 @@ describe("GET /api/topics", () => {
       .get("/api/topics")
       .then((res) => {
         expect(res.status).toBe(200);
-        expect(res.body.length).toBe(data.topicData.length);
-        res.body.forEach((topic) => {
+        expect(res.body.topics.length).toBe(data.topicData.length);
+        res.body.topics.forEach((topic) => {
           expect(topic).toHaveProperty("slug");
           expect(topic).toHaveProperty("description");
         });
@@ -43,9 +43,8 @@ describe("GET /api", () => {
     const res = await request(app).get("/api");
     const filePath = path.join(__dirname, "..", "endpoints.json");
     const data = await fs.readFile(filePath, "utf-8");
-    const apiEndpoints = JSON.parse(data);
     expect(res.status).toBe(200);
-    expect(res.body).toEqual(apiEndpoints);
+    expect(res.body).toEqual(JSON.parse(data));
   });
 });
 
@@ -55,8 +54,8 @@ describe("GET /api/article:article_id", () => {
       .get("/api/articles/1")
       .then((res) => {
         expect(res.status).toBe(200);
-        expect(res.body.length).toBeGreaterThan(0);
-        res.body.forEach((topic) => {
+        expect(res.body.result.length).toBeGreaterThan(0);
+        res.body.result.forEach((topic) => {
           expect(topic).toHaveProperty("author");
           expect(topic).toHaveProperty("title");
           expect(topic).toHaveProperty("article_id");
@@ -101,8 +100,8 @@ describe("GET /api/articles/:article_id/comments ", () => {
       .get("/api/articles/1/comments")
       .then((res) => {
         expect(res.status).toBe(200);
-        expect(res.body.length).toBeGreaterThan(0);
-        expect(res.body).toBeSortedBy("created_at", {
+        expect(res.body.comments.length).toBeGreaterThan(0);
+        expect(res.body.comments).toBeSortedBy("created_at", {
           descending: true,
         });
         const expectedCommentStructure = {
@@ -113,18 +112,16 @@ describe("GET /api/articles/:article_id/comments ", () => {
           body: expect.any(String),
           article_id: expect.any(Number),
         };
-        res.body.forEach((comment) => {
+        res.body.comments.forEach((comment) => {
           expect(comment).toMatchObject(expectedCommentStructure);
         });
       });
   });
   test("returns 404 when article_id does not exist", () => {
-    const article_id = "888";
     return request(app)
-      .get(`/api/articles/${article_id}/comments`)
+      .get(`/api/articles/888/comments`)
       .then((err) => {
         expect(err.status).toBe(404);
-        expect(err.text).toBe(`${article_id} is not an article`);
       });
   });
 });

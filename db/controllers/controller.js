@@ -16,7 +16,7 @@ const {
 exports.getTopics = (req, res, next) => {
   fetchAllTopics()
     .then((topics) => {
-      res.status(200).send(topics);
+      res.status(200).send({ topics: topics });
     })
     .catch((err) => next(err));
 };
@@ -31,7 +31,7 @@ exports.getArticleByID = (req, res, next) => {
   const { article_id } = req.params;
   fetchArticleByID(article_id)
     .then((result) => {
-      res.status(200).send(result);
+      res.status(200).send({ result: result });
     })
     .catch((err) => next(err));
 };
@@ -40,8 +40,8 @@ exports.getCommentsByArticleId = (req, res, next) => {
 
   verifyArticle(article_id, res, next)
     .then(() => fetchCommentsByArticleId(article_id, next))
-    .then((response) => {
-      res.status(200).send(response);
+    .then((comments) => {
+      res.status(200).send({ comments: comments });
     })
     .catch((err) => next(err));
 };
