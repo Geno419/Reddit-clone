@@ -52,7 +52,7 @@ exports.fetchPostedComment = (article_id, username, body) => {
       [body, article_id, username]
     )
     .then(({ rows }) => {
-      return rows[0].body;
+      return rows;
     });
 };
 exports.updateVoteByArticleId = (IncrementBy, article_id) => {
@@ -146,7 +146,6 @@ exports.getArticlesByTopic = (topic = "PassBYChecker") => {
       .then(({ rows }) => rows);
   }
 };
-
 exports.verifyTopic = (topic, res) => {
   return db
     .query(`SELECT * FROM topics WHERE slug = $1;`, [topic])

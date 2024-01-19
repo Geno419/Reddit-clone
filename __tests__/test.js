@@ -100,7 +100,7 @@ describe("GET /api/articles/:article_id/comments ", () => {
       .get("/api/articles/1/comments")
       .then((res) => {
         expect(res.status).toBe(200);
-        expect(res.body.comments.length).toBeGreaterThan(0);
+        expect(res.body.comments.length).toEqual(11);
         expect(res.body.comments).toBeSortedBy("created_at", {
           descending: true,
         });
@@ -231,6 +231,7 @@ describe("GET /api/users", () => {
       .get("/api/users")
       .then((res) => {
         expect(res.status).toBe(200);
+        expect(res.body.users.length).toBeGreaterThan(0);
         const expectedUserStructure = {
           username: expect.any(String),
           name: expect.any(String),
