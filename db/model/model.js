@@ -30,7 +30,7 @@ exports.fetchArticleByID = (article_id) => {
       return rows;
     });
 };
-exports.fetchCommentsByArticleId = (article_id) => {
+exports.postCommentsByArticleId = (article_id) => {
   return db
     .query(
       `
@@ -42,7 +42,7 @@ exports.fetchCommentsByArticleId = (article_id) => {
       return rows;
     });
 };
-exports.fetchPostedComment = (article_id, username, body) => {
+exports.insertPostedComment = (article_id, username, body) => {
   return db
     .query(
       `INSERT INTO comments 
@@ -55,7 +55,7 @@ exports.fetchPostedComment = (article_id, username, body) => {
       return rows;
     });
 };
-exports.updateVoteByArticleId = (IncrementBy, article_id) => {
+exports.updateVoteByArticleId = (IncrementBy, article_id, res) => {
   return db
     .query(
       `SELECT votes FROM articles
@@ -97,7 +97,7 @@ exports.verifyArticle = (article_id, res) => {
     .query(`SELECT * FROM articles WHERE article_id = $1;`, [article_id])
     .then(({ rows }) => {
       if (rows.length === 0) {
-        return res.status(404).send(`${article_id} is not found`);
+        res.status(400).send(`${article_id} is not found`);
       }
     });
 };
@@ -131,7 +131,7 @@ exports.fetchAllUsers = () => {
     )
     .then(({ rows }) => rows);
 };
-exports.getArticlesByTopic = (topic = "PassBYChecker") => {
+exports.fetchArticle = (topic = "PassBYChecker") => {
   if (topic !== "PassBYChecker") {
     return db
       .query(`SELECT * FROM articles WHERE topic = '${topic}';`)

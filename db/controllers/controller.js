@@ -2,15 +2,15 @@ const {
   fetchAllTopics,
   fetchApiEndpoints,
   fetchArticleByID,
-  fetchCommentsByArticleId,
-  fetchPostedComment,
+  postCommentsByArticleId,
+  insertPostedComment,
   verifyArticle,
   verifyUsername,
   verifyComment,
   updateVoteByArticleId,
   removeComment,
   fetchAllUsers,
-  getArticlesByTopic,
+  fetchArticle,
   verifyTopic,
 } = require("../model/model.js");
 
@@ -40,7 +40,7 @@ exports.getCommentsByArticleId = (req, res, next) => {
   const { article_id } = req.params;
 
   verifyArticle(article_id, res, next)
-    .then(() => fetchCommentsByArticleId(article_id, next))
+    .then(() => postCommentsByArticleId(article_id, next))
     .then((comments) => {
       res.status(200).send({ comments: comments });
     })
@@ -54,7 +54,7 @@ exports.postCommentById = (req, res, next) => {
       return verifyUsername(username, res, next);
     })
     .then(() => {
-      return fetchPostedComment(article_id, username, body);
+      return insertPostedComment(article_id, username, body);
     })
     .then((comment) => {
       res.status(200).send({ comment: comment });
@@ -66,7 +66,7 @@ exports.patchByArticleId = (req, res, next) => {
   const { IncrementBy } = req.body;
   verifyArticle(article_id, res, next)
     .then(() => {
-      return updateVoteByArticleId(IncrementBy, article_id, res, next);
+      return updateVoteByArticleId(IncrementBy, article_id);
     })
     .then(({ votes }) => {
       res.status(200).send({ votes: votes });
@@ -89,10 +89,10 @@ exports.getAllUsers = (req, res, next) => {
     .then((users) => res.status(200).send({ users: users }))
     .catch((err) => next(err));
 };
-exports.getArticleByTopic = (req, res, next) => {
+exports.getArticle = (req, res, next) => {
   const { topic } = req.query;
   verifyTopic(topic)
-    .then(() => getArticlesByTopic(topic, res))
+    .then(() => fetchArticle(topic, res))
     .then((articles) => res.status(200).send({ articles }))
     .catch((err) => next(err));
 };

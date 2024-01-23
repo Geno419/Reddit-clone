@@ -122,7 +122,7 @@ describe("GET /api/articles/:article_id/comments ", () => {
     return request(app)
       .get(`/api/articles/888/comments`)
       .then((err) => {
-        expect(err.status).toBe(404);
+        expect(err.status).toBe(400);
       });
   });
   test("returns 400 when article_id is invalid", () => {
@@ -152,8 +152,12 @@ describe("POST /api/articles/:article_id/comments ", () => {
       .post("/api/articles/1/comments")
       .send(newComment)
       .then((res) => {
+        const comment = res.body.comment;
         expect(res.status).toBe(200);
         expect(res.body).toHaveProperty("comment");
+        expect(comment[0].body).toContain(
+          "To be, or not to be, that is the question"
+        );
       });
   });
   test("returns not an article when article not in DB", () => {
@@ -165,7 +169,7 @@ describe("POST /api/articles/:article_id/comments ", () => {
     return request(app)
       .post(`/api/articles/${article_id}/comments`)
       .send(newComment)
-      .expect(404)
+      .expect(400)
       .then((err) => {
         expect(err).toHaveProperty("text", `${article_id} is not found`);
       });
@@ -189,15 +193,15 @@ describe("POST /api/articles/:article_id/comments ", () => {
   });
 });
 
-describe("PATCH PATCH /api/articles/:article_id", () => {
+describe("PATCH /api/articles/:article_id", () => {
   test("update vote count by ten", () => {
-    const IncrementByObj = { IncrementBy: "1" };
+    const IncrementByObj = { IncrementBy: "10" };
     return request(app)
       .patch("/api/articles/1")
       .send(IncrementByObj)
       .then((res) => {
         expect(res.status).toBe(200);
-        expect(Number(Object.values(res.body))).toBeGreaterThan(1);
+        expect(Number(Object.values(res.body))).toEqual(110);
       });
   });
   test("update vote count by -100", () => {
@@ -207,16 +211,16 @@ describe("PATCH PATCH /api/articles/:article_id", () => {
       .send(IncrementByObj)
       .then((res) => {
         expect(res.status).toBe(200);
-        expect(Number(Object.values(res.body))).toBeGreaterThanOrEqual(0);
+        expect(Number(Object.values(res.body))).toEqual(0);
       });
   });
-  test("returns not an article when article not in DB", () => {
+  test("return 400 for invalid article_id", () => {
     const IncrementByObj = { IncrementBy: "1000" };
     return request(app)
       .patch("/api/articles/9999")
       .send(IncrementByObj)
       .then((err) => {
-        expect(err.status).toBe(404);
+        expect(err.status).toBe(400);
         expect(err.text).toEqual("9999 is not found");
       });
   });
@@ -277,7 +281,16 @@ describe("GET /api/articles?(topic query)", () => {
         };
         res.body.articles.forEach((article) => {
           expect(article).toMatchObject(expectedArticleStructure);
+          expect(article.topic).toEqual("cats");
         });
+      });
+  });
+  test("return empty array for existing id but no article", () => {
+    return request(app)
+      .get("/api/articles?topic=paper")
+      .then((res) => {
+        expect(res.status).toBe(200);
+        expect(res.body.articles).toEqual([]);
       });
   });
   test("returns 404 status when the topic is not found", () => {

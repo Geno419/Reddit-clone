@@ -9,14 +9,14 @@ const {
   patchByArticleId,
   deleteCommentByID,
   getAllUsers,
-  getArticleByTopic,
+  getArticle,
 } = require("./controllers/controller.js");
 app.use(express.json());
 
 app.get("/api/topics", getTopics);
 app.get("/api", getApiEndpoints);
 app.get("/api/articles/:article_id", getArticleByID);
-app.get("/api/articles", getArticleByTopic);
+app.get("/api/articles", getArticle);
 app.get("/api/articles/:article_id/comments", getCommentsByArticleId);
 app.get("/api/users", getAllUsers);
 
