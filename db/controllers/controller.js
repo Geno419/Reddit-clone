@@ -16,21 +16,20 @@ const {
 
 exports.getTopics = (req, res, next) => {
   fetchAllTopics()
-    .then((topics) => {
-      res.status(200).send({ topics: topics });
-    })
+    .then((topics) => res.status(200).send({ topics: topics }))
     .catch((err) => next(err));
 };
 exports.getApiEndpoints = (req, res, next) => {
   fetchApiEndpoints()
-    .then((apiEndpoints) => {
-      res.status(200).json(apiEndpoints);
-    })
+    .then((apiEndpoints) =>
+      res.status(200).json({ apiEndpoints: apiEndpoints })
+    )
     .catch((err) => next(err));
 };
 exports.getArticleByID = (req, res, next) => {
   const { article_id } = req.params;
-  fetchArticleByID(article_id)
+  verifyArticle(article_id, res)
+    .then(() => fetchArticleByID(article_id))
     .then((result) => {
       res.status(200).send({ result: result });
     })
@@ -38,33 +37,28 @@ exports.getArticleByID = (req, res, next) => {
 };
 exports.getCommentsByArticleId = (req, res, next) => {
   const { article_id } = req.params;
-
   verifyArticle(article_id, res, next)
     .then(() => postCommentsByArticleId(article_id, next))
-    .then((comments) => {
-      res.status(200).send({ comments: comments });
-    })
+    .then((comments) => res.status(200).send({ comments: comments }))
     .catch((err) => next(err));
 };
 exports.postCommentById = (req, res, next) => {
   const { article_id } = req.params;
   const { username, body } = req.body;
+
+  if (username.length <= 0 || body.length <= 0) {
+    res.status(400).send("username or comment are empty");
+  }
   verifyArticle(article_id, res)
-    .then(() => {
-      return verifyUsername(username, res, next);
-    })
-    .then(() => {
-      return insertPostedComment(article_id, username, body);
-    })
-    .then((comment) => {
-      res.status(200).send({ comment: comment });
-    })
+    .then(() => verifyUsername(username, res, next))
+    .then(() => insertPostedComment(article_id, username, body))
+    .then((comment) => res.status(200).send({ comment: comment }))
     .catch((err) => next(err));
 };
 exports.patchByArticleId = (req, res, next) => {
   const { article_id } = req.params;
   const { IncrementBy } = req.body;
-  verifyArticle(article_id, res, next)
+  verifyArticle(article_id, res)
     .then(() => {
       return updateVoteByArticleId(IncrementBy, article_id);
     })
@@ -91,8 +85,8 @@ exports.getAllUsers = (req, res, next) => {
 };
 exports.getArticle = (req, res, next) => {
   const { topic } = req.query;
-  verifyTopic(topic)
+  verifyTopic(topic, res)
     .then(() => fetchArticle(topic, res))
-    .then((articles) => res.status(200).send({ articles }))
+    .then((articles) => res.status(200).send({ articles: articles }))
     .catch((err) => next(err));
 };

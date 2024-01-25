@@ -97,7 +97,7 @@ exports.verifyArticle = (article_id, res) => {
     .query(`SELECT * FROM articles WHERE article_id = $1;`, [article_id])
     .then(({ rows }) => {
       if (rows.length === 0) {
-        res.status(400).send(`${article_id} is not found`);
+        res.status(400).send(`article_id: ${article_id} not found`);
       }
     });
 };
@@ -106,7 +106,7 @@ exports.verifyComment = (comment_id, res) => {
     .query(`SELECT * FROM comments WHERE comment_id = $1;`, [comment_id])
     .then(({ rows }) => {
       if (rows.length === 0) {
-        return res.status(404).send(`${comment_id} is not a comment`);
+        return res.status(400).send(`${comment_id} is not a valid comment id`);
       }
     });
 };
@@ -150,12 +150,15 @@ exports.fetchArticle = (topic = "PassBYChecker") => {
       .then(({ rows }) => rows);
   }
 };
-exports.verifyTopic = (topic, res) => {
-  return db
-    .query(`SELECT * FROM topics WHERE slug = $1;`, [topic])
-    .then(({ rows }) => {
-      if (rows.length === 0 && topic !== undefined) {
-        return res.status(404).send(`${topic} is not an article`);
-      }
-    });
+exports.verifyTopic = (topic = "default", res) => {
+  if (topic !== "default") {
+    return db
+      .query(`SELECT * FROM topics WHERE slug = $1;`, [topic])
+      .then(({ rows }) => {
+        if (rows.length === 0) {
+          return res.status(400).send(`topic does not exist`);
+        }
+      });
+  }
+  return Promise.resolve();
 };
