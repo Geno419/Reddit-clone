@@ -1,12 +1,20 @@
 {
   "GET /api": {
-    "description": "serves up a json representation of all the available endpoints of the api"
+    "description": "serves up a JSON representation of all the available endpoints of the API",
+    "exampleResponse": {
+      "apiEndpoints": {}
+    }
   },
   "GET /api/topics": {
     "description": "serves an array of all topics",
     "queries": [],
     "exampleResponse": {
-      "topics": [{ "slug": "football", "description": "Footie!" }]
+      "topics": [
+        {
+          "slug": "football",
+          "description": "Footie!"
+        }
+      ]
     }
   },
   "GET /api/articles": {
@@ -15,12 +23,13 @@
     "exampleResponse": {
       "articles": [
         {
-          "title": "Seafood substitutions are increasing",
-          "topic": "cooking",
           "author": "weegembump",
-          "body": "Text from the article..",
+          "title": "Seafood substitutions are increasing",
+          "article_id": 1,
+          "topic": "cooking",
           "created_at": "2018-05-30T15:59:13.341Z",
           "votes": 0,
+          "article_img_url": "",
           "comment_count": 6
         }
       ]
@@ -39,16 +48,85 @@
       "article_img_url"
     ],
     "exampleResponse": {
-      "articles": [
+      "result": [
         {
-          "article_id": 1,
-          "title": "Living in the shadow of a great man",
-          "topic": "mitch",
           "author": "butter_bridge",
+          "title": "Living in the shadow of a great man",
+          "article_id": 1,
           "body": "I find this existence challenging",
+          "topic": "mitch",
           "created_at": "2020-07-09T20:11:00.000Z",
           "votes": 100,
           "article_img_url": "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700"
+        }
+      ]
+    }
+  },
+  "GET /api/articles/:article_id/comments": {
+    "description": "serves an array of comments for the specified article",
+    "queries": [],
+    "exampleResponse": {
+      "comments": [
+        {
+          "comment_id": 1,
+          "votes": 10,
+          "created_at": "2022-01-01T12:00:00.000Z",
+          "author": "example_author",
+          "body": "This is a sample comment.",
+          "article_id": 1
+        }
+      ]
+    }
+  },
+  "GET /api/users": {
+    "description": "serves an array of all users",
+    "queries": [],
+    "exampleResponse": {
+      "users": [
+        {
+          "username": "tickle122",
+          "name": "Tom Tickle",
+          "avatar_url": "https://www.spiritsurfers.net/monica/happy.jpg"
+        }
+      ]
+    }
+  },
+  "POST /api/articles/:article_id/comments": {
+    "description": "posts a new comment for the specified article",
+    "queries": [],
+    "exampleRequestBody": {
+      "username": "butter_bridge",
+      "body": "New comment text..."
+    },
+    "exampleResponse": {
+      "comment": [
+        {
+          "comment_id": 301,
+          "author": "butter_bridge",
+          "votes": 0,
+          "created_at": "2023-02-05T05:00:00.000Z",
+          "body": "New comment text..."
+        }
+      ]
+    }
+  },
+  "PATCH /api/articles/:article_id": {
+    "description": "updates the votes of the specified article",
+    "queries": [],
+    "exampleRequestBody": {
+      "IncrementBy": 1
+    },
+    "exampleResponse": {
+      "votes": 101
+    }
+  },
+  "DELETE /api/comments/:comment_id": {
+    "description": "deletes the comment with the specified ID",
+    "queries": [],
+    "exampleResponse": {
+      "data": [
+        {
+          "bool": true
         }
       ]
     }
