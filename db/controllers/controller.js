@@ -10,7 +10,8 @@ const {
   updateVoteByArticleId,
   removeComment,
   fetchAllUsers,
-  fetchArticle,
+  fetchArticlesByTopic,
+  fetchAllArticles,
   verifyTopic,
 } = require("../model/model.js");
 
@@ -83,10 +84,20 @@ exports.getAllUsers = (req, res, next) => {
     .then((users) => res.status(200).send({ users: users }))
     .catch((err) => next(err));
 };
-exports.getArticle = (req, res, next) => {
+exports.getArticles = (req, res, next) => {
   const { topic } = req.query;
-  verifyTopic(topic, res)
-    .then(() => fetchArticle(topic, res))
-    .then((articles) => res.status(200).send({ articles: articles }))
-    .catch((err) => next(err));
+  if (topic) {
+    verifyTopic(topic, res)
+      .then(() => {
+        return fetchArticlesByTopic(topic);
+      })
+      .then((articles) => {
+        res.status(200).json({ articles: articles });
+      })
+      .catch((err) => next(err));
+  } else {
+    fetchAllArticles()
+      .then((articles) => res.status(200).json({ articles: articles }))
+      .catch((err) => next(err));
+  }
 };

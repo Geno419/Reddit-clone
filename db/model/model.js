@@ -131,34 +131,45 @@ exports.fetchAllUsers = () => {
     )
     .then(({ rows }) => rows);
 };
-exports.fetchArticle = (topic = "PassBYChecker") => {
-  if (topic !== "PassBYChecker") {
-    return db
-      .query(`SELECT * FROM articles WHERE topic = '${topic}';`)
-      .then(({ rows }) => rows);
-  } else {
-    return db
-      .query(
-        `SELECT articles.author, articles.title,articles.topic, articles.article_id,articles.topic,
-        articles.created_at, articles.votes, articles.article_img_url,
-        comments.article_id AS comment_count
-        FROM articles 
-        INNER JOIN  
-        comments ON comments.article_id = articles.article_id
-        ORDER BY articles.created_at DESC;`
-      )
-      .then(({ rows }) => rows);
-  }
+
+exports.verifyTopic = (topic, res) => {
+  return db
+    .query(`SELECT * FROM topics WHERE slug = $1;`, [topic])
+    .then(({ rows }) => {
+      if (rows.length === 0) {
+        return res.status(404).send(`topic does not exist`);
+      }
+    });
 };
-exports.verifyTopic = (topic = "default", res) => {
-  if (topic !== "default") {
-    return db
-      .query(`SELECT * FROM topics WHERE slug = $1;`, [topic])
-      .then(({ rows }) => {
-        if (rows.length === 0) {
-          return res.status(400).send(`topic does not exist`);
-        }
-      });
-  }
-  return Promise.resolve();
+
+exports.fetchAllArticles = () => {
+  return db
+    .query(
+      `
+      SELECT articles.author, articles.title, articles.topic, articles.article_id, articles.created_at, articles.votes, articles.article_img_url, COUNT(comments.article_id) AS comment_count
+      FROM articles 
+      LEFT JOIN comments ON comments.article_id = articles.article_id
+      GROUP BY articles.author, articles.title, articles.topic, articles.article_id, articles.created_at, articles.votes, articles.article_img_url
+      ORDER BY articles.created_at DESC;
+    `
+    )
+    .then(({ rows }) => rows);
+};
+
+exports.fetchArticlesByTopic = (topic) => {
+  return db
+    .query(
+      `
+      SELECT articles.author, articles.title, articles.topic, articles.article_id, articles.created_at, articles.votes, articles.article_img_url, COUNT(comments.article_id) AS comment_count
+      FROM articles 
+      LEFT JOIN comments ON comments.article_id = articles.article_id
+      WHERE articles.topic = $1
+      GROUP BY articles.author, articles.title, articles.topic, articles.article_id, articles.created_at, articles.votes, articles.article_img_url
+      ORDER BY articles.created_at DESC;
+    `,
+      [topic]
+    )
+    .then(({ rows }) => {
+      return rows;
+    });
 };
